@@ -1,6 +1,7 @@
 
 from labjack import ljm
 import sys
+from numpy import pi
 
 class motor_class:
 
@@ -20,16 +21,18 @@ class motor_class:
         self.Speed_feedback_pin = "AIN0"
         self.Position_feedback_pin = "AIN3"
 
+        self.max_voltage = max_voltage
+        self.min_voltage = min_voltage
+        self.flip_direction = dir
+
         self.current_scale = 100 # mA / A
         self.speed_scale = 1/0.0286 # rad/s / volt
-        self.position_scale = 4.77 # rad / volt
+        self.position_scale = 1/max_voltage * 2 * pi # rad / volt
 
         self.clock_roll_value = 8000
 
-        self.flip_direction = dir
         self.max_FIO_voltage = 3.3
-        self.max_voltage = max_voltage
-        self.min_voltage = min_voltage
+
 
         try:
             ljm.eWriteName(self.handle, "DIO_EF_CLOCK0_ENABLE", 0)

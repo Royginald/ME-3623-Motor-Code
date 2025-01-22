@@ -1,7 +1,7 @@
 
+# need the matplotlib module: pip install matplotlib
 # need the keyboard module: pip3 install keyboard
 # need the labjack module: python -m pip install labjack-ljm
-# need the matplotlib module: pip install matplotlib
 # https://support.labjack.com/docs/python-for-ljm-windows-mac-linux
 
 
@@ -13,7 +13,7 @@ import time
 from numpy import zeros
 
 # Set up motor
-motor = motor_class(12, 1)
+motor = motor_class(10, 1)
 
 # Plotting Settings
 num_plot_points = 200
@@ -63,10 +63,17 @@ while(True):
     if keyboard.is_pressed("q"):
         break
 
-    # wait until time step time has passed
+    # Wait until time_step time has passed
     while( (time.time() - start_time - new_time) < time_step ):
         pass
 
 # Turn off motor
 motor.shutdown()
+
+
+
+
+
+
+
 
