@@ -59,7 +59,7 @@ classdef MotorClass
         
         function value = readVoltage(obj, pin)
             try
-                [~, value] = LabJack.LJM.eReadName(obj.handle, pin);
+                [~, value] = LabJack.LJM.eReadName(obj.handle, pin, 0);
             catch ME
                 disp(ME.message);
                 value = NaN;
@@ -123,6 +123,10 @@ classdef MotorClass
                     
                     LabJack.LJM.eWriteName(obj.handle, [pin_off, '_EF_ENABLE'], 0);
                     LabJack.LJM.eWriteName(obj.handle, pin_off, 0);
+
+                    % name = 'DAC0';
+                    % value = 2.5;  % 2.5 V
+                    % LabJack.LJM.eWriteName(handle, name, value);
                     
                     LabJack.LJM.eWriteName(obj.handle, [pin_on, '_EF_ENABLE'], 0);
                     LabJack.LJM.eWriteName(obj.handle, [pin_on, '_EF_INDEX'], 0);
