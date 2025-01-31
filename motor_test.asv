@@ -1,7 +1,6 @@
 
 clear
 clc
-close all
 
 motor = MotorClass(10, 1);
 
@@ -35,7 +34,6 @@ while(not(end_loop))
     plot_data(:, num_plot_points) = [new_time; speed];
 
     plot(plot_data(1, :), plot_data(2, :))
-    grid on
     drawnow;
 
     pause(time_step - toc + new_time)
@@ -44,9 +42,10 @@ end
 % close(fig)
 motor.shutdown();
 
-% Function to check if q key is pressed from figure
 function keyPressCallback(~, event)
+    % Callback function to handle key presses
     if event.Key == 'q'
+        % Set the flag to true if 'q' is pressed
         assignin('base', 'end_loop', true);
     end
 end

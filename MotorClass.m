@@ -14,7 +14,7 @@ classdef MotorClass
         min_voltage
         flip_direction
         current_scale = 100; % mA / A
-        speed_scale = 1 / 0.0286; % rad/s / volt
+        speed_scale = -1 / 0.0286; % rad/s / volt
         position_scale
         clock_roll_value = 8000;
         max_FIO_voltage = 3.3;
@@ -31,7 +31,7 @@ classdef MotorClass
             obj.position_scale = 1 / max_voltage * 2 * pi; % rad / volt
             
             try
-                [~, obj.handle] = LabJack.LJM.OpenS('T4', 'ANY', 'ANY', obj.handle);
+                [~, obj.handle] = LabJack.LJM.OpenS('ANY', 'ANY', 'ANY', obj.handle);
             catch ME
                 disp(ME.message);
                 disp('No LabJack Found');
