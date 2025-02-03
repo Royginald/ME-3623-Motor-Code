@@ -5,7 +5,7 @@ from numpy import pi
 
 class motor_class:
 
-    def __init__(self, max_voltage, min_voltage, dir=False):
+    def __init__(self, min_voltage, max_voltage, dt=0.05, dir=False):
         try:
             self.handle = ljm.openS("ANY","ANY","ANY")
         except Exception as e:
@@ -17,15 +17,19 @@ class motor_class:
         self.IN1_pin = "DIO7"
         self.IN2_pin = "DIO6"
 
-        self.Current_feedback_pin = "AIN2"
+        # self.Current_feedback_pin = "AIN2"
         self.Speed_feedback_pin = "AIN0"
-        self.Position_feedback_pin = "AIN3"
+        self.Position_feedback_pin = "AIN1"
+        self.Voltage_feedback_1_pin = "AIN2"
+        self.Voltage_feedback_2_pin = "AIN3"
 
         self.max_voltage = max_voltage
         self.min_voltage = min_voltage
         self.flip_direction = dir
+        self.time_step = dt
 
-        self.current_scale = 100 # mA / A
+        # self.current_scale = 1 # mA / A                   
+
         self.speed_scale = 1/0.0286 # rad/s / volt
         self.position_scale = 1/max_voltage * 2 * pi # rad / volt
 
@@ -33,6 +37,11 @@ class motor_class:
 
         self.max_FIO_voltage = 3.3
 
+        self.Voltage_setpoint = 0
+        self.voltage_sum = 0
+
+        self.Kp = 0.1
+        self.Ki = 0.5
 
         try:
             ljm.eWriteName(self.handle, "DIO_EF_CLOCK0_ENABLE", 0)
@@ -41,6 +50,47 @@ class motor_class:
             ljm.eWriteName(self.handle, "DIO_EF_CLOCK0_ENABLE", 1)
         except Exception as e:
             print(e)
+
+    def loop_function(self):
+        # Voltage Control
+        feedback = self.get_voltage_feedback()
+        error = self.Voltage_setpoint - feedback
+        self.voltage_sum += error * self.time_step
+
+        control_action = self.voltage_sum * self.Ki + error * self.Kp
+
+        if (control_action > 0) ^ self.flip_direction:
+            pin_on = self.IN1_pin
+            pin_off = self.IN2_pin
+        else:
+            pin_on = self.IN2_pin
+            pin_off = self.IN1_pin
+
+        voltage = abs(control_action)
+
+        if voltage > self.max_voltage:
+            voltage = self.max_voltage
+
+        if voltage < self.min_voltage:
+            try:
+                ljm.eWriteName(self.handle, self.SLP_pin, 0) # Set motor driver to sleep mode
+            except Exception as e:
+                print(e)
+        else:
+            config = int(voltage / self.max_voltage * self.clock_roll_value)
+
+            try:
+                ljm.eWriteName(self.handle, self.SLP_pin, 1)# Set motor driver to normal mode
+
+                ljm.eWriteName(self.handle, pin_off + "_EF_ENABLE", 0)
+                ljm.eWriteName(self.handle, pin_off, 0)
+
+                ljm.eWriteName(self.handle, pin_on + "_EF_ENABLE", 0)
+                ljm.eWriteName(self.handle, pin_on + "_EF_INDEX", 0)
+                ljm.eWriteName(self.handle, pin_on + "_EF_CONFIG_A", config)
+                ljm.eWriteName(self.handle, pin_on + "_EF_ENABLE", 1)
+            except Exception as e:
+                print(e)
 
     def write_voltage(self, pin, value): # Write voltage to DAC pins
         try:
@@ -72,39 +122,47 @@ class motor_class:
         except Exception as e:
             print(e)
 
+    def get_voltage_feedback(self):
+        try:
+            return ljm.eReadName(self.handle, self.Voltage_feedback_1_pin) - ljm.eReadName(self.handle, self.Voltage_feedback_2_pin)
+        except Exception as e:
+            print(e)
+
     def set_motor_voltage(self, voltage): # Write voltage applied to the motor
-        if (voltage > 0) ^ self.flip_direction:
-            pin_on = self.IN1_pin
-            pin_off = self.IN2_pin
-        else:
-            pin_on = self.IN2_pin
-            pin_off = self.IN1_pin
+        # if (voltage > 0) ^ self.flip_direction:
+        #     pin_on = self.IN1_pin
+        #     pin_off = self.IN2_pin
+        # else:
+        #     pin_on = self.IN2_pin
+        #     pin_off = self.IN1_pin
 
         voltage = abs(voltage)
 
-        if voltage > self.max_voltage:
+        if abs(voltage) > self.max_voltage:
             voltage = self.max_voltage
 
-        if voltage < self.min_voltage:
-            try:
-                ljm.eWriteName(self.handle, self.SLP_pin, 0) # Set motor driver to sleep mode
-            except Exception as e:
-                print(e)
-        else:
-            config = int(voltage / self.max_voltage * self.clock_roll_value)
+        self.Voltage_setpoint = voltage
 
-            try:
-                ljm.eWriteName(self.handle, self.SLP_pin, 1)# Set motor driver to normal mode
+        # if voltage < self.min_voltage:
+        #     try:
+        #         ljm.eWriteName(self.handle, self.SLP_pin, 0) # Set motor driver to sleep mode
+        #     except Exception as e:
+        #         print(e)
+        # else:
+        #     config = int(voltage / self.max_voltage * self.clock_roll_value)
 
-                ljm.eWriteName(self.handle, pin_off + "_EF_ENABLE", 0)
-                ljm.eWriteName(self.handle, pin_off, 0)
+        #     try:
+        #         ljm.eWriteName(self.handle, self.SLP_pin, 1)# Set motor driver to normal mode
 
-                ljm.eWriteName(self.handle, pin_on + "_EF_ENABLE", 0)
-                ljm.eWriteName(self.handle, pin_on + "_EF_INDEX", 0)
-                ljm.eWriteName(self.handle, pin_on + "_EF_CONFIG_A", config)
-                ljm.eWriteName(self.handle, pin_on + "_EF_ENABLE", 1)
-            except Exception as e:
-                print(e)
+        #         ljm.eWriteName(self.handle, pin_off + "_EF_ENABLE", 0)
+        #         ljm.eWriteName(self.handle, pin_off, 0)
+
+        #         ljm.eWriteName(self.handle, pin_on + "_EF_ENABLE", 0)
+        #         ljm.eWriteName(self.handle, pin_on + "_EF_INDEX", 0)
+        #         ljm.eWriteName(self.handle, pin_on + "_EF_CONFIG_A", config)
+        #         ljm.eWriteName(self.handle, pin_on + "_EF_ENABLE", 1)
+        #     except Exception as e:
+        #         print(e)
     
     def shutdown(self): # shutdown the Labjack
         try:
