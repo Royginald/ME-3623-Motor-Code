@@ -1,5 +1,5 @@
 
-classdef MotorClass
+classdef labjack_T4_functions
     properties
         handle = 0;
         SLP_pin = 'DIO5';
@@ -21,7 +21,7 @@ classdef MotorClass
     end
     
     methods
-        function obj = MotorClass(max_voltage, min_voltage, dir)
+        function obj = labjack_T4_functions(min_voltage, max_voltage, dir)
             if nargin < 3
                 dir = false;
             end
@@ -48,6 +48,15 @@ classdef MotorClass
                 disp(ME.message);
             end
         end
+
+        function serial_number = get_serial_number(obj)
+            try
+                serial_number = LabJack.LJM.eReadName(obj.handle, "SERIAL_NUMBER", 0);
+            catch ME
+                disp(ME.message);
+                serial_number = NaN;
+            end
+        end
         
         function writeVoltage(obj, pin, value)
             try
@@ -65,7 +74,7 @@ classdef MotorClass
                 value = NaN;
             end
         end
-        
+
         function current = getCurrentFeedback(obj)
             try
                 current = LabJack.LJM.eReadName(obj.handle, obj.Current_feedback_pin, 0) * obj.current_scale;
@@ -116,6 +125,9 @@ classdef MotorClass
                     disp(ME.message);
                 end
             else
+                switch get_serial_number()
+                    case 
+                end
                 config = floor(voltage / obj.max_voltage * obj.clock_roll_value);
                 
                 try
@@ -123,10 +135,6 @@ classdef MotorClass
                     
                     LabJack.LJM.eWriteName(obj.handle, [pin_off, '_EF_ENABLE'], 0);
                     LabJack.LJM.eWriteName(obj.handle, pin_off, 0);
-
-                    % name = 'DAC0';
-                    % value = 2.5;  % 2.5 V
-                    % LabJack.LJM.eWriteName(handle, name, value);
                     
                     LabJack.LJM.eWriteName(obj.handle, [pin_on, '_EF_ENABLE'], 0);
                     LabJack.LJM.eWriteName(obj.handle, [pin_on, '_EF_INDEX'], 0);
@@ -150,6 +158,26 @@ classdef MotorClass
             catch ME
                 disp(ME.message);
             end
+        end
+        
+        function v = poly_1(x)
+            v = 0.0908*x^3 - 2.0504*x^2 + 15.659*x - 31.945;
+        end
+
+        function v = poly_2(x)
+            v = 0.0745*x^3 - 1.6086*x^2 + 12.040*x - 23.039;
+        end
+
+        function v = poly_3(x)
+            v = 0.0867*x^3 - 2.0122*x^2 + 15.854*x - 33.577;
+        end
+
+        function v = poly_4(x)
+            v = -0.0334*x^4 + 1.0316*x^3 - 11.762*x^2 + 59.018*x - 101.96;
+        end
+
+        function v= poly_test(x)
+            v = x;
         end
     end
 end

@@ -5,7 +5,7 @@ from numpy import pi
 
 class motor_class:
 
-    def __init__(self, min_voltage, max_voltage, dt=0.05, dir=False):
+    def __init__(self, min_voltage, max_voltage, dir=False):
         try:
             self.handle = ljm.openS("ANY","ANY","ANY")
         except Exception as e:
@@ -24,7 +24,6 @@ class motor_class:
         self.max_voltage = max_voltage
         self.min_voltage = min_voltage
         self.flip_direction = dir
-        self.time_step = dt
 
         self.current_scale = 100 # mA / A                   
         self.speed_scale = 1/0.0286 # rad/s / volt
