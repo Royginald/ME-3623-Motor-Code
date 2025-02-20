@@ -19,14 +19,14 @@ class motor_class:
 
         self.Speed_feedback_pin = "AIN0"
         self.Position_feedback_pin = "AIN3"
-        self.Current_feedback_pin = "AIN2"
+        self.Current_feedback_pin = "AIN4"
 
         self.max_voltage = max_voltage
         self.min_voltage = min_voltage
         self.flip_direction = dir
-
-        self.current_scale = 100 # mA / A                   
-        self.speed_scale = 1/0.0286 # rad/s / volt
+ 
+        self.current_scale = 10000 / 1.011667 / 2000 # A / V           
+        self.speed_scale = 1/0.0286                  # rad/s / volt
         self.position_scale = 1/max_voltage * 2 * pi # rad / volt
 
         self.clock_roll_value = 8000
@@ -38,6 +38,8 @@ class motor_class:
             ljm.eWriteName(self.handle, "DIO_EF_CLOCK0_DIVISOR", 1 )
             ljm.eWriteName(self.handle, "DIO_EF_CLOCK0_ROLL_VALUE", self.clock_roll_value)
             ljm.eWriteName(self.handle, "DIO_EF_CLOCK0_ENABLE", 1)
+
+            ljm.eReadName(self.handle, self.Current_feedback_pin)
         except Exception as e:
             print(e)
 
@@ -94,7 +96,17 @@ class motor_class:
 
         if voltage < self.min_voltage:
             try:
-                ljm.eWriteName(self.handle, self.SLP_pin, 0) # Set motor driver to sleep mode
+                ljm.eWriteName(self.handle, self.SLP_pin, 1) # Set motor driver to sleep mode
+
+                ljm.eWriteName(self.handle, pin_off + "_EF_ENABLE", 0)
+                ljm.eWriteName(self.handle, pin_off + "_EF_INDEX", 0)
+                ljm.eWriteName(self.handle, pin_off + "_EF_CONFIG_A", 0)
+                ljm.eWriteName(self.handle, pin_off + "_EF_ENABLE", 1)
+
+                ljm.eWriteName(self.handle, pin_on + "_EF_ENABLE", 0)
+                ljm.eWriteName(self.handle, pin_on + "_EF_INDEX", 0)
+                ljm.eWriteName(self.handle, pin_on + "_EF_CONFIG_A", 0)
+                ljm.eWriteName(self.handle, pin_on + "_EF_ENABLE", 1)
             except Exception as e:
                 print(e)
         else:
@@ -114,7 +126,7 @@ class motor_class:
             config = int(poly(voltage) / self.max_voltage * self.clock_roll_value)
 
             try:
-                ljm.eWriteName(self.handle, self.SLP_pin, 1)# Set motor driver to normal mode
+                ljm.eWriteName(self.handle, self.SLP_pin, 1) # Set motor driver to normal mode
 
                 ljm.eWriteName(self.handle, pin_off + "_EF_ENABLE", 0)
                 ljm.eWriteName(self.handle, pin_off, 0)

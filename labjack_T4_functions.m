@@ -6,16 +6,16 @@ classdef labjack_T4_functions
         IN1_pin = 'DIO7';
         IN2_pin = 'DIO6';
         
-        Current_feedback_pin = 'AIN2';
         Speed_feedback_pin = 'AIN0';
         Position_feedback_pin = 'AIN3';
+        Current_feedback_pin = 'AIN4';
         
-        max_voltage
+        max_voltage = 10
         min_voltage
         flip_direction
-        current_scale = 100; % mA / A
-        speed_scale = 1 / 0.0286; % rad/s / volt
-        position_scale
+        current_scale = 10000 / 1.011667 / 2000 % A / V  
+        speed_scale = 1 / 0.0286;               % rad/s / volt
+        position_scale = 1/max_voltage * 2 * pi % rad / volt
         clock_roll_value = 8000;
         max_FIO_voltage = 3.3;
     end

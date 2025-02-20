@@ -14,7 +14,7 @@ import csv
 from numpy import zeros, concatenate, savetxt, transpose
 
 # Set up motor
-motor = motor_class(0, 10)
+motor = motor_class(3, 10)
 
 # Plotting Settings
 num_plot_points = 200
@@ -39,9 +39,10 @@ start_time = time.time()
 
 while(True):
     # Get time and current speed
+    new_time = time.time() - start_time
     speed = motor.get_speed_feedback() # Returns speed in radians per second
     position = motor.get_position_feedback()
-    new_time = time.time() - start_time
+    current = motor.get_current_feedback()
 
     # -------------------- Control Algorithm -------------------- 
 
@@ -57,7 +58,6 @@ while(True):
     plot_data[:, -1] = [new_time, speed]
 
     # Plot new data
-     
     line1.set_xdata(plot_data[0, :])
     line1.set_ydata(plot_data[1, :])
     ax.set_xlim(plot_data[0][0], plot_data[0][-1])
@@ -81,12 +81,6 @@ motor.shutdown()
 # Save data
 if save_data:
     savetxt('Motor_data.csv', transpose(plot_data), delimiter=',')
-
-
-
-
-
-
 
 
 

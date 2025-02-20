@@ -26,10 +26,10 @@ tic;
 
 while(not(end_loop))
     % Get time and current speed
-    
-    speed = motor.get_speed_feedback();
-    position = motor.get_position_feedback();
     new_time = toc;
+    speed = motor.get_speed_feedback(); % Returns speed in radians per second
+    position = motor.get_position_feedback();
+    current = motor.get_current_feedback();
 
     % -------------------- Control Algorithm -------------------- 
 
