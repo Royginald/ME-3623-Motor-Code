@@ -71,6 +71,9 @@ while(True):
     if keyboard.is_pressed("q"):
         break
 
+    if plot_data[0, 0] != 0:
+        break
+
     # Wait until time_step time has passed
     while( (time.time() - start_time - new_time) < time_step ):
         pass
