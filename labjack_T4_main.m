@@ -16,8 +16,13 @@ y_range = [0, 0];
 
 % -------------------- Local Variables -------------------- 
 
+K_c = 0.0382;
+K_i = 0.4684;
+
 save_data = true;
-setpoint = 100;
+setpoint = 100; % rad/s
+
+sum = 0;
 
 % --------------------  End Variables  -------------------- 
 
@@ -33,12 +38,14 @@ while(not(end_loop))
 
     % -------------------- Control Algorithm -------------------- 
 
-    u = 5;
+    error = setpoint - speed;
+    sum = sum + error * time_step;
+    control_action = error * K_c + sum * K_i;
 
     % --------------------   End Algorithm   -------------------- 
 
     % Set voltage applied to motor
-    motor.set_motor_voltage(u)
+    motor.set_motor_voltage(control_action)
 
     % Update data to be plotted
     plot_data(:, 1:num_plot_points - 1) = plot_data(:, 2:num_plot_points);

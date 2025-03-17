@@ -17,7 +17,7 @@ from numpy import zeros, concatenate, savetxt, transpose
 motor = motor_class(3, 10)
 
 # Plotting Settings
-num_plot_points = 200
+num_plot_points = 400
 plot_data = zeros((2, num_plot_points))
 time_step = 0.05
 plt.ion()
@@ -29,8 +29,13 @@ y_range = [0, 0]
 
 # -------------------- Local Variables -------------------- 
 
+K_c = 0.0599
+K_i = 0.4808
+
 save_data = True
-setpoint = 100
+setpoint = 100; # rad/s
+
+sum = 0
 
 # --------------------  End Variables  -------------------- 
 
@@ -46,12 +51,14 @@ while(True):
 
     # -------------------- Control Algorithm -------------------- 
 
-    u = 5
+    error = setpoint - speed
+    sum += error * time_step
+    control_action = K_c * error + K_i * sum
 
     # --------------------   End Algorithm   -------------------- 
 
     # Set voltage applied to motor
-    motor.set_motor_voltage(u)
+    motor.set_motor_voltage(control_action)
 
     # Update data to be plotted
     plot_data[:, :-1] = plot_data[:, 1:]

@@ -1,7 +1,7 @@
 clc
 clf
 
-system_num = 4;
+system_num = 2;
 
 T_s = 2.5; % sec
 PO = 14; % percent
