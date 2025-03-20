@@ -11,7 +11,7 @@ import keyboard
 import matplotlib.pyplot as plt
 import time
 import csv
-from numpy import zeros, concatenate, savetxt, transpose
+from numpy import zeros, concatenate, savetxt, transpose, sin
 
 # Set up motor
 motor = motor_class(3, 10)
@@ -33,9 +33,28 @@ K_c = 0.0599
 K_i = 0.4808
 
 save_data = True
-setpoint = 100; # rad/s
+# setpoint = 100; # rad/s
 
 sum = 0
+
+def setpoint(t):
+    if t > 40:
+        return 20*sin(10*t - 2*t**2 )
+    elif t > 32.5:
+        return 90 + 16*t
+    elif t > 30:
+        return 130 - 8*t
+    elif t > 25:
+        return 90 + 4*t
+    elif t > 15:
+        return 90
+    elif t > 10:
+        return 110
+    elif t > 5:
+        return 140
+    else:
+        return 80
+
 
 # --------------------  End Variables  -------------------- 
 
@@ -51,7 +70,7 @@ while(True):
 
     # -------------------- Control Algorithm -------------------- 
 
-    error = setpoint - speed
+    error = setpoint(new_time) - speed
     sum += error * time_step
     control_action = K_c * error + K_i * sum
 
